@@ -7,10 +7,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_knit$set(root.dir = "/home/jessica/CSU/Teaching/ESS_523d/Rprojects/IntroToR/")
+knitr::opts_knit$set(root.dir = "C:/Users/ddunn/OneDrive/Documents/R/523d/523Dintro")
 ```
 
-```
 
 ## Introduction to plotting Remote sensing data
 
@@ -18,7 +17,7 @@ This is an R markdown document that allows you to weave text and code together. 
 
 
 ```{r directory}
-setwd("/home/jessica/CSU/Teaching/ESS_523d/Rprojects/IntroToR/")
+setwd("C:/Users/ddunn/OneDrive/Documents/R/523d/523Dintro")
 ```
 
 At that path, we should have a directory that contains all project files to keep things organized. The project folder structure looks something like this:
@@ -80,7 +79,6 @@ points(dat$wave, dat$s2, pch=19, cex=1.5,  col="red")
 Advanced: can you write a for loop to plot all of the samples on the same plot, where each line a different color? Hint: you can try terrain.colors(n) or heat.colors(n) to generate an object of color values to use, where n is the number of colors; You can also grab a column in a data frame or tribble by using its column number.
 
 
-
 ```{r advancedPlot, echo=T}
 
 ##set up your color scheme, below we make a color ramp with as many columns as our data
@@ -103,15 +101,21 @@ color<-paletteer_c("ggthemes::Red-Green-Gold Diverging", ncol(dat))
 plot(dat$wave, dat$s1, pch=19, cex=1.5,  col=color[1], ylim=c(0,40),
 xlab= "wavelength (nm)", ylab="reflectance",cex.lab=1.5)
 
-##use a for loop to add in other reflectance profiles from other columns, plotted in new colors
-#for (i in 2:ncol(dat)) {
-###fill in XX, YY and ?? with what you think should go there; 
-#points(XX, YY, pch=19, cex=1.5,  col=color[??])
-#}
+# Use a for loop to add other reflectance profiles, ignoring NAs
+for (i in 2:ncol(dat)) {
+  valid_indices <- !is.na(dat$wave) & !is.na(dat[, i])  # Filter out NAs for each column
+  points(dat$wave[valid_indices], dat[, i][valid_indices], pch=19, cex=1.5, col=color[i])
+}
 
 ```
 
+```{r}
+#When I got errors in code development, this helped reset things. Check for open devices:
+dev.list()
 
+#If there are open devices, close them with this:
+graphics.off()
+```
 
 ```{r savePlot, echo=T}
 color<-terrain.colors(ncol(dat))
@@ -121,15 +125,18 @@ dat<-data.frame(dat)
 ##first line is the type of file, path to file, and file name
 jpeg("results/myplot.jpeg")
 plot(dat$wave, dat$s1, pch=19, cex=1.5, xlab= "wavelength (nm)", ylab="reflectance", col=color[1], ylim=c(0,40), cex.lab=1.5)
-
-#for (i in 2:ncol(dat)) {
-###fill in XX, YY and ?? with what you think should go there; 
-#points(XX, YY, pch=19, cex=1.5,  col=??)
-#}
-
-##the line below closes the plotting device and saves the file
 dev.off()
 
-
+for (i in 2:ncol(dat)) {
+  
+  jpeg(paste0("results/myplot_", i, ".jpeg"))# Set the output file name dynamically
+  
+  valid_indices <- !is.na(dat$wave) & !is.na(dat[, i])  # Filter out NAs for each column
+  
+  plot(dat$wave[valid_indices], dat[, i][valid_indices], pch=19, cex=1.5, xlab = "wavelength (nm)", ylab = "reflectance", col=color[i])
+  
+##the line below closes the plotting device and saves the file
+dev.off()
+}
 
 ```
